@@ -70,6 +70,14 @@ public class NodeExtensionsTests(Node testScene) : NodeExtensionsBaseTests(testS
   public override void Cleanup() => base.Cleanup();
 
   [Test]
+  public void GetParentEx_NotInTree_ShouldReturnNull() =>
+    _actor.GetParentEx().ShouldBeNull();
+
+  [Test]
+  public void Typed_GetParentEx_NotInTree_ShouldReturnNull() =>
+    _actor.GetParentEx<INode>().ShouldBeNull();
+
+  [Test]
   public void AddChildEx_ShouldUpdateSceneTree_WithRuntimeMockNode()
   {
     _actor.AddChildEx(_mockRuntimeNode.Object);

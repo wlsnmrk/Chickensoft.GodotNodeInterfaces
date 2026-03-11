@@ -12,6 +12,20 @@ using Godot;
 public partial interface INode
 {
   /// <summary>
+  /// Returns this node's parent, or null if the node doesn't have a parent.
+  /// </summary>
+  INode? GetParentEx() => NodeExtensions.GetParentEx(this);
+
+  /// <summary>
+  /// Returns this node's parent, or null if the node doesn't have a parent.
+  /// </summary>
+  /// <remarks>
+  /// Throws if the parent node cannot be adapted to the specified type.
+  /// </remarks>
+  T? GetParentEx<T>() where T : class, INode =>
+    NodeExtensions.GetParentEx<T>(this);
+
+  /// <summary>
   /// <para>Adds a child <paramref name="node" />. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.</para>
   /// <para>If <paramref name="forceReadableName" /> is <c>true</c>, improves the readability of the added <paramref name="node" />. If not named, the <paramref name="node" /> is renamed to its type, and if it shares <see cref="Node.Name" /> with a sibling, a number is suffixed more appropriately. This operation is very slow. As such, it is recommended leaving this to <c>false</c>, which assigns a dummy name featuring <c>@</c> in both situations.</para>
   /// <para>If <paramref name="internal" /> is different than <see cref="Node.InternalMode.Disabled" />, the child will be added as internal node. Such nodes are ignored by methods like <see cref="Node.GetChildren(bool)" />, unless their parameter <c>include_internal</c> is <c>true</c>. The intended usage is to hide the internal nodes from the user, so the user won't accidentally delete or modify them. Used by some GUI nodes, e.g. <see cref="ColorPicker" />. See <see cref="Node.InternalMode" /> for available modes.</para>

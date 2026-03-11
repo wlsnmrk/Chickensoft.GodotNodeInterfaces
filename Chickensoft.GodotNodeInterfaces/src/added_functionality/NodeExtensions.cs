@@ -5,6 +5,29 @@ using Godot;
 
 public static class NodeExtensions
 {
+  public static INode? GetParentEx(this Node caller) =>
+    GetParentEx((object)caller);
+
+  public static INode? GetParentEx(object caller) =>
+    TreeOp(
+      caller,
+      "get parent",
+      (fakeNodeTree) =>
+        GodotInterfaces.AdaptOrNull<INode>(fakeNodeTree.GetParent()),
+      (node) => GodotInterfaces.AdaptOrNull<INode>(node.GetParent())
+    );
+
+  public static T? GetParentEx<T>(this Node caller) where T : class, INode =>
+    GetParentEx<T>((object)caller);
+
+  public static T? GetParentEx<T>(object caller) where T : class, INode =>
+    TreeOp(
+      caller,
+      "get parent",
+      (fakeNodeTree) => fakeNodeTree.GetParent<T>(),
+      (node) => GodotInterfaces.AdaptOrNull<T>(node.GetParent())
+    );
+
   /// <summary>
   /// <inheritdoc cref="INode.AddChildEx(object, bool, Node.InternalMode)" />
   /// </summary>

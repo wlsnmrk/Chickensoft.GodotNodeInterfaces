@@ -1,8 +1,10 @@
 namespace Chickensoft.GodotNodeInterfaces.Tests;
 
+using System;
 using System.Threading.Tasks;
 using Godot;
 using GoDotTest;
+using Shouldly;
 
 public class NodeExtensionsIntegrationTests(Node testScene) : NodeExtensionsBaseTests(testScene)
 {
@@ -38,6 +40,22 @@ public class NodeExtensionsIntegrationTests(Node testScene) : NodeExtensionsBase
 
   [CleanupAll]
   public void CleanupAll() => RuntimeContext.IsTesting = true;
+
+  [Test]
+  public void GetParentEx_ShouldReturnRoot()
+    => _actor.GetParentEx().ShouldMatch(
+      GodotInterfaces.AdaptNode(TestScene.GetTree().Root)
+    );
+
+  [Test]
+  public void Typed_GetParentEx_ShouldReturnRoot()
+    => _actor.GetParentEx<IWindow>().ShouldMatch(
+      GodotInterfaces.Adapt<IWindow>(TestScene.GetTree().Root)
+    );
+
+  [Test]
+  public void Typed_GetParentEx_ShouldThrow_WhenBadType()
+    => Should.Throw<InvalidCastException>(_actor.GetParentEx<INode3D>);
 
   #region Base Class Tests
 

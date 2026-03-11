@@ -7,26 +7,33 @@ using Godot;
 
 public class FakeNodeTree
 {
+  private Node _node;
   // Map of node paths to FakeSceneTreeNode instances.
-  private readonly OrderedDictionary _nodes;
+  private readonly OrderedDictionary _fakeNodes;
 
   private int _nextId;
 
   public FakeNodeTree(
-    Node parent,
-    Dictionary<string, INode>? nodes = null
+    Node node,
+    Dictionary<string, INode>? fakeNodes = null
   )
   {
-    _nodes = [];
+    _node = node;
+    _fakeNodes = [];
 
-    if (nodes is Dictionary<string, INode> dict)
+    if (fakeNodes is Dictionary<string, INode> dict)
     {
-      foreach (var (path, node) in dict)
+      foreach (var (path, fakeNode) in dict)
       {
-        _nodes.Add(path, node);
+        _fakeNodes.Add(path, fakeNode);
       }
     }
   }
+
+  public Node? GetParent() => _node.GetParent();
+
+  public T? GetParent<T>() where T : class, INode =>
+    GodotInterfaces.AdaptOrNull<T>(_node.GetParent());
 
   public void AddChild(INode node)
   {
@@ -44,20 +51,20 @@ public class FakeNodeTree
       name = node.GetType().Name + "@" + _nextId++;
     }
 
-    _nodes.Add(name, node);
+    _fakeNodes.Add(name, node);
   }
 
   public INode? GetNode(string path) =>
-    _nodes.Contains(path) ? (INode)_nodes[path]! : null;
+    _fakeNodes.Contains(path) ? (INode)_fakeNodes[path]! : null;
 
   public T? GetNode<T>(string path) where T : class, INode =>
-    _nodes.Contains(path) ? (T)_nodes[path]! : null;
+    _fakeNodes.Contains(path) ? (T)_fakeNodes[path]! : null;
 
   public INode? FindChild(string pattern)
   {
-    foreach (string path in _nodes.Keys)
+    foreach (string path in _fakeNodes.Keys)
     {
-      var node = (INode)_nodes[path]!;
+      var node = (INode)_fakeNodes[path]!;
       var name = "";
       // We use try/catch to check node name since not all node mocks may
       // have stubbed the Name property.
@@ -76,15 +83,15 @@ public class FakeNodeTree
     return null;
   }
 
-  public bool HasNode(NodePath path) => _nodes.Contains((string)path);
+  public bool HasNode(NodePath path) => _fakeNodes.Contains((string)path);
 
   public INode[] FindChildren(string pattern)
   {
     var children = new List<INode>();
 
-    foreach (string path in _nodes.Keys)
+    foreach (string path in _fakeNodes.Keys)
     {
-      var node = (INode)_nodes[path]!;
+      var node = (INode)_fakeNodes[path]!;
       var name = "";
       try
       {
@@ -94,7 +101,7 @@ public class FakeNodeTree
 
       if (!string.IsNullOrEmpty(name) && name.Match(pattern))
       {
-        children.Add((INode)_nodes[path]!);
+        children.Add((INode)_fakeNodes[path]!);
       }
     }
 
@@ -103,7 +110,7 @@ public class FakeNodeTree
 
   public T? GetChild<T>(int index) where T : class, INode
   {
-    if (index >= _nodes.Count)
+    if (index >= _fakeNodes.Count)
     {
       return null;
     }
@@ -112,35 +119,35 @@ public class FakeNodeTree
     if (actualIndex < 0)
     {
       // Negative indices access the children from the last one.
-      actualIndex = _nodes.Count + actualIndex;
+      actualIndex = _fakeNodes.Count + actualIndex;
     }
 
-    var child = _nodes[actualIndex];
+    var child = _fakeNodes[actualIndex];
     return child is null ? null : (T)child;
   }
 
   public INode? GetChild(int index) => GetChild<INode>(index);
 
-  public int GetChildCount() => _nodes.Count;
+  public int GetChildCount() => _fakeNodes.Count;
 
-  public INode[] GetChildren() => [.. _nodes.Values.Cast<INode>()];
+  public INode[] GetChildren() => [.. _fakeNodes.Values.Cast<INode>()];
 
   public void RemoveChild(INode node)
   {
-    var path = _nodes
+    var path = _fakeNodes
       .Keys
       .Cast<string>()
-      .First(k => _nodes[k] == node);
-    _nodes.Remove(path);
+      .First(k => _fakeNodes[k] == node);
+    _fakeNodes.Remove(path);
   }
 
   public Dictionary<string, INode> GetAllNodes()
   {
     var nodes = new Dictionary<string, INode>();
 
-    foreach (string path in _nodes.Keys)
+    foreach (string path in _fakeNodes.Keys)
     {
-      var node = (INode)_nodes[path]!;
+      var node = (INode)_fakeNodes[path]!;
       nodes.Add(path, node);
     }
 
